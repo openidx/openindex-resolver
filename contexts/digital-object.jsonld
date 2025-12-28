@@ -1,0 +1,42 @@
+{
+  "@context": {
+    "@version": 1.1,
+
+    "openindex": "https://openindex.id/terms/openindex",
+    "type": "@type",
+
+    "DigitalObject": "https://openindex.id/terms/DigitalObject",
+
+    "title": {
+      "@id": "http://schema.org/name",
+      "@type": "xsd:string"
+    },
+
+    "represents": {
+      "@id": "http://schema.org/encodesCreativeWork",
+      "@type": "@id"
+    },
+
+    "media_type": {
+      "@id": "http://schema.org/encodingFormat",
+      "@type": "xsd:string"
+    },
+
+    "url": {
+      "@id": "http://schema.org/contentUrl",
+      "@type": "@id"
+    },
+
+    "checksum": {
+      "@id": "http://schema.org/checksum",
+      "@type": "xsd:string"
+    },
+
+    "record_version": {
+      "@id": "https://openindex.id/terms/recordVersion",
+      "@type": "xsd:string"
+    },
+
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  }
+}

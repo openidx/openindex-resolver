@@ -1,26 +1,59 @@
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
+from fastapi.staticfiles import StaticFiles
 from pathlib import Path
+from copy import deepcopy
 import json
 
 app = FastAPI(
     title="OpenIndex Resolver",
-    version="0.2"
+    version="0.3"
 )
 
+# -------------------------------------------------
 # Base paths
+# -------------------------------------------------
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 RECORDS_DIR = BASE_DIR / "records"
+CONTEXTS_DIR = BASE_DIR / "contexts"
 
+# -------------------------------------------------
 # Templates
+# -------------------------------------------------
+
 templates = Jinja2Templates(
     directory=BASE_DIR / "app" / "templates"
 )
 
-# -----------------------------
+# -------------------------------------------------
+# Static serving for JSON-LD contexts
+# -------------------------------------------------
+
+app.mount(
+    "/contexts",
+    StaticFiles(directory=CONTEXTS_DIR, media_type="application/ld+json"),
+    name="contexts"
+)
+
+# -------------------------------------------------
+# Context lookup table
+# -------------------------------------------------
+
+CONTEXT_MAP = {
+    "namespace": "https://openindex.id/contexts/namespace.jsonld",
+    "Work": "https://openindex.id/contexts/work.jsonld",
+    "Edition": "https://openindex.id/contexts/edition.jsonld",
+    "DigitalObject": "https://openindex.id/contexts/digital-object.jsonld"
+}
+
+def get_context_for_record(record: dict) -> str | None:
+    return CONTEXT_MAP.get(record.get("type"))
+
+# -------------------------------------------------
 # Utility functions
-# -----------------------------
+# -------------------------------------------------
 
 def load_json(path: Path):
     if not path.exists():
@@ -28,11 +61,24 @@ def load_json(path: Path):
     with open(path, "r", encoding="utf-8") as f:
         return json.load(f)
 
-# -----------------------------
+def wrap_record(record: dict, include_context: bool = False) -> dict:
+    """
+    Return a safe response copy of a record.
+    Injects @context only when requested.
+    """
+    response = deepcopy(record)
+
+    if include_context:
+        context_url = get_context_for_record(record)
+        if context_url:
+            response["@context"] = context_url
+
+    return response
+
+# -------------------------------------------------
 # Namespace resolution
-# -----------------------------
 # Example: /earthpress
-# -----------------------------
+# -------------------------------------------------
 
 @app.get("/{namespace}", response_class=HTMLResponse)
 async def resolve_namespace(request: Request, namespace: str):
@@ -44,7 +90,6 @@ async def resolve_namespace(request: Request, namespace: str):
 
     namespace_data = load_json(namespace_file)
 
-    # Load all records in namespace
     records = []
     for file in namespace_dir.glob("*.json"):
         if file.name == "_namespace.json":
@@ -55,20 +100,22 @@ async def resolve_namespace(request: Request, namespace: str):
 
     accept = request.headers.get("accept", "")
 
+    # JSON-LD response
+    if "application/ld+json" in accept:
+        response = {
+            "@context": CONTEXT_MAP.get("namespace"),
+            "@id": namespace_data.get("openindex"),
+            "@type": "Collection",
+            "name": namespace_data.get("name"),
+            "hasPart": [r.get("openindex") for r in records]
+        }
+        return JSONResponse(response, media_type="application/ld+json")
+
     # JSON response
     if "application/json" in accept:
         return JSONResponse({
             "namespace": namespace_data,
             "records": records
-        })
-
-    # JSON-LD response (minimal)
-    if "application/ld+json" in accept:
-        return JSONResponse({
-            "@id": namespace_data.get("openindex"),
-            "@type": "Collection",
-            "name": namespace_data.get("name"),
-            "hasPart": [r.get("openindex") for r in records]
         })
 
     # Default: HTML
@@ -81,11 +128,10 @@ async def resolve_namespace(request: Request, namespace: str):
         }
     )
 
-# -----------------------------
+# -------------------------------------------------
 # Record resolution
-# -----------------------------
 # Example: /earthpress/tartarian-world
-# -----------------------------
+# -------------------------------------------------
 
 @app.get("/{namespace}/{slug}", response_class=HTMLResponse)
 async def resolve_record(request: Request, namespace: str, slug: str):
@@ -97,17 +143,14 @@ async def resolve_record(request: Request, namespace: str, slug: str):
 
     accept = request.headers.get("accept", "")
 
+    # JSON-LD response
+    if "application/ld+json" in accept:
+        response = wrap_record(record, include_context=True)
+        return JSONResponse(response, media_type="application/ld+json")
+
     # JSON response
     if "application/json" in accept:
         return JSONResponse(record)
-
-    # JSON-LD response (placeholder)
-    if "application/ld+json" in accept:
-        return JSONResponse({
-            "@id": record.get("openindex"),
-            "@type": record.get("type"),
-            "name": record.get("title")
-        })
 
     # Default: HTML
     return templates.TemplateResponse(

@@ -1,0 +1,47 @@
+{
+  "@context": {
+    "@version": 1.1,
+
+    "openindex": "https://openindex.id/terms/openindex",
+    "type": "@type",
+
+    "Edition": "https://openindex.id/terms/Edition",
+
+    "title": {
+      "@id": "http://schema.org/name",
+      "@type": "xsd:string"
+    },
+
+    "of_work": {
+      "@id": "http://schema.org/isPartOf",
+      "@type": "@id"
+    },
+
+    "publication_date": {
+      "@id": "http://schema.org/datePublished",
+      "@type": "xsd:date"
+    },
+
+    "publisher": {
+      "@id": "http://schema.org/publisher",
+      "@type": "@id"
+    },
+
+    "identifier": {
+      "@id": "http://schema.org/identifier",
+      "@type": "xsd:string"
+    },
+
+    "format": {
+      "@id": "http://schema.org/bookFormat",
+      "@type": "xsd:string"
+    },
+
+    "record_version": {
+      "@id": "https://openindex.id/terms/recordVersion",
+      "@type": "xsd:string"
+    },
+
+    "xsd": "http://www.w3.org/2001/XMLSchema#"
+  }
+}
