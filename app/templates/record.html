@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ record.title }}</title>
+  <link rel="alternate" type="application/json" href="?format=json">
+  <link rel="alternate" type="application/ld+json" href="?format=ldjson">
+</head>
+<body>
+  <h1>{{ record.title }}</h1>
+  <p><strong>OpenIndex ID:</strong><br>
+     <code>{{ record.openindex }}</code></p>
+  <p><strong>Type:</strong> {{ record.type }}</p>
+  {% if record.creators %}
+  <h2>Creators</h2>
+  <ul>
+    {% for c in record.creators %}
+      <li>{{ c.name }} ({{ c.role }})</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if record.publisher %}
+  <p><strong>Publisher:</strong> {{ record.publisher.name }}</p>
+  {% endif %}
+  <p><strong>Created:</strong> {{ record.created_at }}</p>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "openindex": "https://openindex.id/earthpress/tartarian-world",
+  "type": "work",
+  "title": "Tartarian World",
+  "creators": [
+    { "name": "Isaac Horton", "role": "author" }
+  ],
+  "publisher": {
+    "name": "Earth Press",
+    "id": "https://openindex.id/earthpress"
+  },
+  "date_published": "2024",
+  "language": "en",
+  "created_at": "2025-01-01T00:00:00Z",
+  "record_version": "v1"
+}
