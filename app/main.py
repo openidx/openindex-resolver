@@ -1,7 +1,9 @@
+from typing import Optional
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pathlib import Path
 from copy import deepcopy
 import json
@@ -37,6 +39,11 @@ app.mount(
     name="contexts"
 )
 
+app.mount(
+    "/static",
+    StaticFiles(directory=BASE_DIR / "static"),
+    name="static"
+)
 
 # -------------------------------------------------
 # Context lookup table
@@ -49,8 +56,17 @@ CONTEXT_MAP = {
     "DigitalObject": "https://openindex.id/contexts/digital-object.jsonld"
 }
 
-def get_context_for_record(record: dict) -> str | None:
+def get_context_for_record(record: dict) -> Optional[str]:
     return CONTEXT_MAP.get(record.get("type"))
+
+
+# -------------------------------------------------
+# favicon for html response
+# -------------------------------------------------
+
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    return FileResponse(BASE_DIR / "static" / "favicon.ico")
 
 # -------------------------------------------------
 # Utility functions
