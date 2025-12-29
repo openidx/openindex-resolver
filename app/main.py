@@ -33,9 +33,10 @@ templates = Jinja2Templates(
 
 app.mount(
     "/contexts",
-    StaticFiles(directory=CONTEXTS_DIR, media_type="application/ld+json"),
+    StaticFiles(directory=CONTEXTS_DIR),
     name="contexts"
 )
+
 
 # -------------------------------------------------
 # Context lookup table
